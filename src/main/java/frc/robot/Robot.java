@@ -32,7 +32,6 @@ public class Robot extends TimedRobot {
   //private final CANSparkMax sparkMax1 = new CANSparkMax(1, MotorType.kBrushless);
 
   private final CANSparkMax sparkMax3 = new CANSparkMax(53, MotorType.kBrushless);
-  //The weird device ids was to fix a strange problem where all the ids would reset on boot, and would get confused     
   //Spark 1: Base / First arm motor, Spark 2: 2nd Arm Motor / Middle Spark 3: Hand 
   private RobotContainer m_robotContainer;
   public double forwardVelocity = 0; 
