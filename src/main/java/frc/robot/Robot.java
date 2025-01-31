@@ -29,6 +29,7 @@ public class Robot extends TimedRobot {
   private final Victor victor4 = new Victor(4);
   private final XboxController xbox = new XboxController(0);
   private final DifferentialDrive differentialDrive = new DifferentialDrive(victor1,victor3); 
+  //The weird id's are because of a weird glitch where the cans would reset their ids when the robot restarts
   //private final CANSparkMax sparkMax1 = new CANSparkMax(1, MotorType.kBrushless);
 
   private final CANSparkMax sparkMax3 = new CANSparkMax(53, MotorType.kBrushless);
