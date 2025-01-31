@@ -4,10 +4,14 @@
 
 package frc.robot;
 
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.Victor;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -20,26 +24,35 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private final Victor victor1 = new Victor(1);
-  private final Victor victor2 = new Victor(3);
-  private final Victor victor3 = new Victor(2);
+  private final Victor victor3 = new Victor(3);
+  private final Victor victor2 = new Victor(2);
   private final Victor victor4 = new Victor(4);
   private final XboxController xbox = new XboxController(0);
-  private final DifferentialDrive differentialDrive = new DifferentialDrive(victor1,victor2); 
-  private RobotContainer m_robotContainer;
+  private final DifferentialDrive differentialDrive = new DifferentialDrive(victor1,victor3); 
+  //private final CANSparkMax sparkMax1 = new CANSparkMax(1, MotorType.kBrushless);
 
+  private final CANSparkMax sparkMax3 = new CANSparkMax(53, MotorType.kBrushless);
+  //The weird device ids was to fix a strange problem where all the ids would reset on boot, and would get confused     
+  //Spark 1: Base / First arm motor, Spark 2: 2nd Arm Motor / Middle Spark 3: Hand 
+  private RobotContainer m_robotContainer;
+  public double forwardVelocity = 0; 
+  public double turnVelocity = 0;
+  public double sideVelocity = 0;
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
   public void robotInit() {
-    victor1.addFollower(victor3);
-    victor2.addFollower(victor4);
+    victor1.addFollower(victor2);
+    victor3.addFollower(victor4);
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    victor2.setInverted(true);
+    victor3.setInverted(true);
     differentialDrive.setSafetyEnabled(false);
     m_robotContainer = new RobotContainer();
+    SmartDashboard.setDefaultNumber("speed", 0);
+
   }
 
   /**
@@ -86,6 +99,8 @@ public class Robot extends TimedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
+    //sparkMax2.set(.1);
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
@@ -95,9 +110,33 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() 
   {
-    if(xbox.getRightTriggerAxis() < .5)
+    
+    if(xbox.getRightTriggerAxis() > .5)
+      {
+        differentialDrive.arcadeDrive(xbox.getLeftY() * .5, xbox.getRightX() * .5);
+      }
+      
+      if(xbox.getRightTriggerAxis() < .5)
+      {
+      motorSet();
+      if (xbox.getRawButton(1) || xbox.getRawButton(4))
+      {
+        suckDrive();  
+      }
+      else 
+      {
+        differentialDrive.arcadeDrive(forwardVelocity, turnVelocity);
+      }
+    }
+    
+    
+      
+    
+
+        /* 
+        if(xbox.getRightTriggerAxis() < .5)
     {
-      if(xbox.getLeftX() < .3)
+      if(xbox.getLeftX() < .5)
       {
         if(xbox.getLeftTriggerAxis() > .5)
         {
@@ -105,7 +144,7 @@ public class Robot extends TimedRobot {
         } 
         else
         {
-          differentialDrive.arcadeDrive(-xbox.getLeftY() * .6, -xbox.getRightX() * .6);
+          differentialDrive.arcadeDrive(-xbox.getLeftY() * .5, -xbox.getRightX() * .5);
         }
       }
       else 
@@ -121,8 +160,62 @@ public class Robot extends TimedRobot {
     else
     {
       differentialDrive.stopMotor();
-    }
+    }*/
+    
   }
+
+public void suckDrive()
+{
+  victor1.set(-sideVelocity);
+  victor3.set(sideVelocity);
+  victor2.set(sideVelocity);
+  victor4.set(sideVelocity);
+}
+
+public void motorSet()
+{
+  if(xbox.getRawButton(3)) 
+  {
+     forwardVelocity = SmartDashboard.getNumber("speed", 0);
+  }
+  else if(xbox.getRawButton(2))
+  {
+    forwardVelocity = -SmartDashboard.getNumber("speed", 0);
+  }
+  else
+  {
+    forwardVelocity = 0;
+  }
+  //xbox.getRawButton(3);
+  
+  if(xbox.getRawButton(7)) 
+  {
+     turnVelocity = SmartDashboard.getNumber("speed", 0);
+  }
+  else if(xbox.getRawButton(8))
+  {
+    turnVelocity = -SmartDashboard.getNumber("speed", 0);
+  }
+  else
+  {
+    turnVelocity = 0;
+  }
+
+  if(xbox.getRawButton(1))
+  {
+    sideVelocity = 0.4;
+  }
+  else if(xbox.getRawButton(4))
+  {
+    sideVelocity = -0.4;
+  }
+  else
+  {
+    sideVelocity = 0;
+  }
+  //xbox.getRawButton(3);
+  
+}
 
   @Override
   public void testInit() {
